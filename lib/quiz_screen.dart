@@ -9,7 +9,6 @@ class QuizScreen extends StatefulWidget {
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
-
 class _QuizScreenState extends State<QuizScreen> {
   List<Question> _questions = [];
   int _currentIndex = 0;
@@ -17,18 +16,44 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _answered = false;
   bool _loading = true;
 
-    @override
+  @override
   void initState() {
     super.initState();
     loadQuestions();
   }
 
   void loadQuestions() async {
-    final questions = await ApiService.fetchQuestions();
+    try {
+      final questions = await ApiService.fetchQuestions();
+
+      setState(() {
+        _questions = questions;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+      });
+      print("Error loading questions: $e");
+    }
+  }
+
+  void checkAnswer(String selected) {
+    if (_answered) return;
 
     setState(() {
-      _questions = questions;
-      _loading = false;
+      _answered = true;
+
+      if (selected == _questions[_currentIndex].correctAnswer) {
+        _score++;
+      }
+    });
+  }
+
+  void nextQuestion() {
+    setState(() {
+      _currentIndex++;
+      _answered = false;
     });
   }
 }
