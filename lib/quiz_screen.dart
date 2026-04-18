@@ -56,4 +56,51 @@ class _QuizScreenState extends State<QuizScreen> {
       _answered = false;
     });
   }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_currentIndex >= _questions.length) {
+      return Scaffold(
+        body: Center(
+          child: Text("Final Score: $_score"),
+        ),
+      );
+    }
+
+    final question = _questions[_currentIndex];
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Trivia Quiz")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(question.question),
+            const SizedBox(height: 20),
+
+            ...question.options.map((option) {
+              return ElevatedButton(
+                onPressed: _answered ? null : () => checkAnswer(option),
+                child: Text(option),
+              );
+            }),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: _answered ? nextQuestion : null,
+              child: const Text("Next"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
