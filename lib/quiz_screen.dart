@@ -15,6 +15,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int _score = 0;
   bool _answered = false;
   bool _loading = true;
+  String? _selectedAnswer;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
     setState(() {
       _answered = true;
+      _selectedAnswer = selected;
 
       if (selected == _questions[_currentIndex].correctAnswer) {
         _score++;
@@ -54,22 +56,39 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _currentIndex++;
       _answered = false;
+      _selectedAnswer = null;
     });
   }
 
+  Color getButtonColor(String option) {
+    if (!_answered) return Colors.blue;
+
+    final correct = _questions[_currentIndex].correctAnswer;
+
+    if (option == correct) {
+      return Colors.green;
+    } else if (option == _selectedAnswer) {
+      return Colors.red;
+    } else {
+      return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // 🔄 Loading screen
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    // 🏁 End of quiz
     if (_currentIndex >= _questions.length) {
       return Scaffold(
         body: Center(
-          child: Text("Final Score: $_score"),
+          child: Text(
+            "Final Score: $_score / ${_questions.length}",
+            style: const TextStyle(fontSize: 24),
+          ),
         ),
       );
     }
@@ -82,22 +101,33 @@ class _QuizScreenState extends State<QuizScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(question.question),
+            // Question text
+            Text(question.question, style: const TextStyle(fontSize: 20)),
+
             const SizedBox(height: 20),
 
+            // Answer buttons
             ...question.options.map((option) {
-              return ElevatedButton(
-                onPressed: _answered ? null : () => checkAnswer(option),
-                child: Text(option),
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: getButtonColor(option),
+                  ),
+                  onPressed: _answered ? null : () => checkAnswer(option),
+                  child: Text(option),
+                ),
               );
             }),
 
             const SizedBox(height: 20),
 
+            // Next button
             ElevatedButton(
               onPressed: _answered ? nextQuestion : null,
               child: const Text("Next"),
-            )
+            ),
           ],
         ),
       ),
